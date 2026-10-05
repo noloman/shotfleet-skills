@@ -10,5 +10,12 @@
   "homepage": "https://shotfleet.com",
   "repository": "https://github.com/noloman/shotfleet-skills",
   "license": "MIT",
-  "keywords": ["screenshots", "localization", "app-store", "google-play", "fastlane", "maestro"]
+  "keywords": [
+    "screenshots",
+    "localization",
+    "app-store",
+    "google-play",
+    "fastlane",
+    "maestro"
+  ]
 }
