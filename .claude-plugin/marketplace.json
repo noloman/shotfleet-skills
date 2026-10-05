@@ -1,0 +1,15 @@
+{
+  "name": "shotfleet",
+  "description": "shotfleet's agent skills and MCP server, as one Claude Code plugin.",
+  "owner": {
+    "name": "Manuel Lorenzo Parejo",
+    "url": "https://shotfleet.com"
+  },
+  "plugins": [
+    {
+      "name": "shotfleet",
+      "source": "./",
+      "description": "Capture and check localized store screenshots with shotfleet. Needs shotfleet installed: https://shotfleet.com"
+    }
+  ]
+}

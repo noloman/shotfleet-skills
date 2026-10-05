@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "shotfleet": {
+      "command": "shotfleet",
+      "args": ["mcp"]
+    }
+  }
+}

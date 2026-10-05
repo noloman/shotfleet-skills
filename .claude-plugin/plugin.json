@@ -1,0 +1,14 @@
+{
+  "name": "shotfleet",
+  "displayName": "shotfleet",
+  "version": "0.1.3",
+  "description": "Skills for shotfleet: capture and check localized App Store and Google Play screenshots, read the report, add the check to CI. The MCP server needs shotfleet installed on your Mac.",
+  "author": {
+    "name": "Manuel Lorenzo Parejo",
+    "url": "https://shotfleet.com"
+  },
+  "homepage": "https://shotfleet.com",
+  "repository": "https://github.com/noloman/shotfleet-skills",
+  "license": "MIT",
+  "keywords": ["screenshots", "localization", "app-store", "google-play", "fastlane", "maestro"]
+}
