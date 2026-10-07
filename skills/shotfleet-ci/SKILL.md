@@ -13,7 +13,7 @@ licence. It takes `--json`: stdout is only JSON, progress goes to stderr.
 | Code | Meaning | CI result |
 |---|---|---|
 | 0 | all good | pass |
-| 1 | problems found | fail, show `problems` |
+| 1 | problems found (with `--strict`, also screenshots left `unverified`) | fail, show `problems` and `unverified` |
 | 2 | setup error, stderr says what to fix | fail, show stderr |
 | 130 | interrupted | fail |
 
@@ -47,7 +47,7 @@ jobs:
 ## `run` and `export` in CI
 
 Need the licence: set `SHOTFLEET_KEY` from the CI secret store (GitHub: `env: SHOTFLEET_KEY: ${{ secrets.SHOTFLEET_KEY }}`).
-It is checked online each run and uses none of the 3 activations. It fails open on purpose: with the licence server unreachable the run counts as licensed, with no offline time limit for a CI key (so a refunded key keeps working until a run reaches Gumroad); an activated Mac still stops after 30 days offline.
+It is checked online each run and uses no activation. With the licence server unreachable, the run still counts as licensed only on a machine where that key passed a check in the last 30 days; on a fresh machine it is refused until Gumroad answers. An activated Mac also stops after 30 days offline.
 With an invalid key `export` refuses and `run` captures only 2 languages. The docs give no CI recipe for `run`
 (it needs simulators and Maestro on the runner); do not invent one.
 

@@ -8,12 +8,12 @@ description: Install, set up, run, check and troubleshoot shotfleet, a macOS com
 shotfleet rewrites one English Maestro flow into every language an app ships, runs all languages in parallel on
 simulators or emulators, and checks every screenshot against the app's own strings (text recognition on macOS,
 or the app's own text for iOS runs). It also checks screenshots you already have (fastlane snapshot, screengrab, a plain folder per language), with no simulator.
-Needs an Apple silicon Mac, Maestro (tested with 2.0.10 and 2.11.0) and Java 17+; iOS needs Xcode, Android needs the Android SDK. Built for macOS 13 or later on Apple silicon; tested on macOS 27.
+Needs an Apple silicon Mac, Maestro (tested with 2.0.10 and 2.11.0) and Java 17+; iOS needs Xcode, Android needs the Android SDK. Built for macOS 13 or later on Apple silicon. My full runs, with simulators and emulators, were all on macOS 27. On macOS 14 and 15 I ran the installer, doctor and check for version 0.1.1, and on macOS 26.2 in a virtual machine for 0.1.2. Other macOS versions are not tested yet.
 
 Start with `shotfleet --version`. If it is missing, the installer from https://shotfleet.com/docs is
 `curl -fsSL https://shotfleet.com/install.sh | sh`: ask the user before running a remote script.
 
-Update: run the install line again. It replaces the program and keeps your licence (the key is stored outside the program folder). `shotfleet doctor` tells you when a newer version is out. A year of updates is included.
+Update: run the install line again. It replaces the program and keeps your licence (the key is stored outside the program folder). `shotfleet doctor` tells you when a newer version is out. A year of updates is included: every version released within a year of your purchase.
 
 ## Which path?
 
@@ -31,7 +31,7 @@ Update: run the install line again. It replaces the program and keeps your licen
 shotfleet check <fastlane-dir> --app <MyApp.app | app.apk> --json --report <report-dir> > check.json
 ```
 
-- `<fastlane-dir>` is the fastlane folder or its `screenshots/` folder (deliver: `screenshots/<locale>/`), or `metadata/android/<locale>/images/phoneScreenshots/` (supply), or plain `<locale>/` folders. A flat folder of one language's PNGs (no `<locale>/` level) needs `--locale <code>`, e.g. `shotfleet check shots/ --locale en`; shotfleet never guesses the language. A folder with both stores is checked one store per run: `--app` (an `.app` or an `.apk`) picks which.
+- `<fastlane-dir>` is the fastlane folder or its `screenshots/` folder (deliver: `screenshots/<locale>/`), or `metadata/android/<locale>/images/phoneScreenshots/` (supply), or plain `<locale>/` folders (with no `--app` and no build found, the image sizes pick the store; a mix of App Store and other sizes is judged against both stores and says so in a note). A flat folder of one language's PNGs (no `<locale>/` level) needs `--locale <code>`, e.g. `shotfleet check shots/ --locale en`; shotfleet never guesses the language. A folder with both stores is checked one store per run: `--app` (an `.app` or an `.apk`) picks which.
 - `--app` is a simulator build (`Debug-iphonesimulator/*.app`, never an `.ipa` or archive) or a debug `.apk`. Without it only language detection runs and short screens can't be judged.
 - Translation files instead of a build: `--strings 'lib/l10n/*.arb'` (repeatable).
 - Put `--report` outside the fastlane folder (default is `./shotfleet-check` in the current directory). shotfleet never edits the checked folder.
@@ -72,7 +72,7 @@ shotfleet export <dir>/out --fastlane <fastlane-dir>   # only languages that pas
 
 `stdout` is only JSON; progress goes to stderr. Read `exit` first.
 
-- `check` and `run`: `{"exit", "screenshots": [{"file": "<locale>/<name>.png", "src", "sha", "lang", "chars", "evidence"}], "problems": ["<locale>/<file>: <what>", ...], "notes": [...]}`. `problems` fail the check; `notes` are worth knowing and do not. `lang` is the language the screen shows (null when macOS can't read that script). `evidence` is `"hierarchy"` when the screen's text came from the app's own UI tree (saved next to the screenshot as `<name>.texts.json`), `"ocr"` when it was read from pixels. `src` is relative to the report folder.
+- `check` and `run`: `{"exit", "screenshots": [{"file": "<locale>/<name>.png", "src", "sha", "lang", "chars", "evidence"}], "problems": ["<locale>/<file>: <what>", ...], "notes": [...], "unverified": ["<locale>/<file>", ...]}`. `problems` fail the check; `notes` are worth knowing and do not. `unverified` lists screenshots nobody read because macOS text recognition was busy (it can prepare for about 40 minutes) and no Tesseract was installed: tell the user to run `check` again later or `brew install tesseract`; no restart is needed. They exit 0 unless `check --strict` (then 1). `lang` is the language the screen shows (null when macOS can't read that script). `evidence` is `"hierarchy"` when the screen's text came from the app's own UI tree (saved next to the screenshot as `<name>.texts.json`), `"ocr"` when it was read from pixels. `src` is relative to the report folder.
 - `export`: `{"exit", "exported": ["<listing folder>", ...], "skipped": ["<locale>", ...]}`. A skipped language failed a check.
 - With `exit` 2 the JSON has only `exit`.
 - With several reports (several `device_types`, both platforms, a folder of device runs, Play phone and tablet sets) `screenshots`, `problems` and `notes` hold all of them, plus `reports`: `[{"report": "<path of check.json>", "problems": [...]}]`. With one report there is no `reports` key.
@@ -82,7 +82,7 @@ shotfleet export <dir>/out --fastlane <fastlane-dir>   # only languages that pas
 
 - What you ran, the exit code, the number of problems, and the path of `index.html` (open it for the grid: a row per language, a column per screen, problems outlined in red).
 - For each problem group: which locale to recapture and whether the cause is in the app (untranslated string, button off-screen in a long language) or in the flow.
-- What was not covered: scripts macOS can't read, `check` without `--app`, Android screens on Maestro older than 2.7.0 (read by text recognition only).
+- What was not covered: `unverified` screenshots, scripts macOS can't read, `check` without `--app`, Android screens on Maestro older than 2.7.0 (read by text recognition only).
 
 ## Do not
 
@@ -100,4 +100,4 @@ shotfleet export <dir>/out --fastlane <fastlane-dir>   # only languages that pas
 [references/troubleshooting.md](references/troubleshooting.md), [references/flow-writing.md](references/flow-writing.md),
 [references/config.md](references/config.md), [references/ci.md](references/ci.md), [references/licence.md](references/licence.md).
 The tool also ships an MCP server (`shotfleet mcp`) with `check`, `run` and `doctor`; its `check` writes the report into `./shotfleet-check` in the server's working directory (never into the folder it
-checks) unless you pass its `report` argument. Its replies are a short summary with the path to `check.json`; pass `full: true` for the whole report. Over MCP, `run` skips the config's `[hooks]` unless you pass `hooks: true`.
+checks) unless you pass its `report` argument. Its replies are a short summary with the path to `check.json`; pass `full: true` for the whole report. Over MCP, no command written in the config runs unless you pass `hooks: true`: `run` skips `[hooks]` and refuses a config with a `[capture]` build, `[ios] simctl` or `[android] shell`; `check` takes no `ocr_command` (that is the CLI's `--ocr-command`).

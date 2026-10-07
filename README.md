@@ -1,10 +1,15 @@
 # shotfleet skills
 
-shotfleet is a macOS command-line tool that captures your App Store and Google Play screenshots in every language
-your app ships, from one English Maestro flow. It also checks that each screenshot is really in the right language,
-and you can get it at [shotfleet.com](https://shotfleet.com).
+This repo is the agent skills and MCP server config for [shotfleet](https://shotfleet.com), a macOS command-line tool
+that captures your App Store and Google Play screenshots in every language your app ships, from one English Maestro
+flow (or your own XCUITest screenshot tests, since 0.1.6), and checks that each screenshot is really in the right
+language.
 
-This repo holds only the agent skills for it, so your AI coding agent knows how to install, set up, run and check
+shotfleet itself is a paid, closed-source program with a free tier: `check` is free, `run` is free for up to 2
+languages. The files here are MIT licensed and contain no shotfleet source; they only tell your AI coding agent how to
+use it. They match shotfleet 0.1.6.
+
+The skills let your AI coding agent know how to install, set up, run and check
 shotfleet, and how to read the report:
 
 | Skill | What it does |
@@ -21,7 +26,17 @@ curl -fsSL https://shotfleet.com/install.sh | sh
 
 ## Install
 
-### Claude Code
+### MCP server
+
+After installing shotfleet:
+
+```bash
+claude mcp add shotfleet -- shotfleet mcp
+```
+
+For any other MCP client, the command is `shotfleet mcp` (stdio). See the MCP server section below.
+
+### Claude Code plugin
 
 In a Claude Code session:
 
@@ -75,6 +90,21 @@ shotfleet skill install
 ```
 
 Start a new agent session after any of these, then ask something like "check my fastlane screenshots with shotfleet".
+
+## MCP server
+
+`shotfleet mcp` runs a local stdio MCP server. It needs shotfleet installed on your Mac.
+
+| Tool | What it does |
+|---|---|
+| `check` | checks a folder of screenshots: each one shows its own language, no copies across languages, none missing, store size and count rules; returns a short summary |
+| `doctor` | says whether Maestro, Xcode and the Android SDK are ready, and what is missing; changes nothing |
+| `run` | captures screenshots in every language from a `shotfleet.toml`, then checks them; boots simulators and emulators, so it takes minutes |
+
+Safety: no command written in your config runs over MCP unless the call passes `hooks: true`. Without it, `run` skips
+`[hooks]` and refuses a config with a `[capture]` build, `[ios] simctl` or `[android] shell`. `run` always installs and
+runs the config's app on the simulators, so only point it at a project you trust. `check` is not read-only: it writes
+its report (`check.json` and `index.html`) to a report folder, and never changes a screenshot.
 
 ## Price
 

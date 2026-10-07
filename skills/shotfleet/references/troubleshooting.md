@@ -91,8 +91,6 @@ message the program prints. Run `shotfleet doctor` first for anything about tool
 | `screenshots but --app is` | an iOS folder with an `.apk` or the reverse | pass the matching build |
 | `contains no translations shotfleet can read` | the build has no `.lproj`, String Catalog or resources (typical for Flutter, React Native, Unity, MAUI) | use `--strings '<glob>'` |
 | `the app this run used is gone` | a shotfleet output folder whose `.app` or `.apk` moved | pass `--app` |
-| `macOS text recognition isn't answering` | macOS is still compiling its text model in `ANECompilerService` (first time, can take minutes on a loaded Mac), or it is stuck | wait for the first compile and re-run, close heavy apps, or `brew install tesseract` (used automatically, and named in the output); a restart is a last resort |
-| `text recognition hung twice on` | same, or an overloaded Mac | wait and rerun; restart only as a last resort |
 | `--ocr-command failed on` | the custom OCR command failed; if it says language data: `brew install tesseract-lang` | fix the command |
 
 ## Export and licence errors
@@ -103,7 +101,9 @@ message the program prints. Run `shotfleet doctor` first for anything about tool
 | `hasn't been checked` | no `check.json` in it | `shotfleet check <out>` |
 | `need a licence` | `export`, or `run` past 2 languages, without a licence | the user runs `shotfleet activate <key>`; see licence.md |
 | `that key didn't activate` | wrong, disabled (`the key was disabled`), refunded or charged-back key | the user checks the key in the Gumroad receipt email |
-| `activations. Email hello@shotfleet.com` | the key has used all 3 activations (Gumroad keys); `deactivate` does not give one back | the user emails hello@shotfleet.com to have the count reset |
+| `activations. Email hello@shotfleet.com` | the key has used all 5 activations (3 Macs plus 2 spare for reinstalls); `deactivate` does not give one back | the user emails hello@shotfleet.com to have the count reset |
+| `SHOTFLEET_KEY couldn't be checked` | Gumroad unreachable and the key never passed a check on this machine in the last 30 days | run again once the network reaches Gumroad |
+| `your licence covers every shotfleet version released until` | this version came out more than a year after the purchase | keep using a version from within the year, or email hello@shotfleet.com about a renewal |
 | `SHOTFLEET_KEY isn't a valid licence` | bad key in CI | fix the secret |
 | `this licence is no longer valid` | refunded, charged back or disabled (the reason is in the parentheses) | the user contacts support |
 | `couldn't reach the licence server for 30 days` | offline too long | connect once |
@@ -112,6 +112,8 @@ message the program prints. Run `shotfleet doctor` first for anything about tool
 
 | Fragment | Meaning | Fix |
 |---|---|---|
+| `screenshot(s) not verified, because` | the per-screen note is `not verified (macOS text recognition was busy)`: macOS was still compiling its text model in `ANECompilerService` (first time, can take minutes on a loaded Mac and about 40 minutes on a quiet one) past `check`'s 8-minute budget, and no Tesseract is installed. `check` finished anyway: the app's own texts, store sizes and missing screens were checked (identical unread screens are a note, not a copy problem); these screenshots are listed in `unverified` and exit 0 (1 with `--strict`) | run `check` again later, close heavy apps, or `brew install tesseract` (used automatically); no restart needed |
+| `another shotfleet is preparing macOS text recognition; waiting` | another shotfleet on this Mac is warming up text recognition; they take turns, and the wait counts against the 8 minutes | nothing |
 | `selectors not found in the app's strings` | the flow taps a label that is not in the app's strings, left as-is, may fail outside English | write the label exactly as the English string, use `id:`, or add `[overrides.<lang>]` |
 | `also means` | `warning <lang>: 'Next' -> 'İleri' also means 'Advanced'`: a tap could hit the wrong element | anchor with `below:`/`above:`, or override |
 | `translated in the app, so it is skipped` | `note: <lang> is only N% translated`; below 50% of the app's own strings it is not captured | add the code to `locales` to capture it anyway |
@@ -122,7 +124,11 @@ message the program prints. Run `shotfleet doctor` first for anything about tool
 | Maestro: `Element not found: Text matching regex` on a Flutter row | Flutter joins a row's title and detail into one label (`Title\nDetail`) | tap it as `"Title.*"` |
 | `free tier: capturing` | no licence: 2 languages captured | see licence.md |
 | `memory pressure is elevated` | shotfleet halved the simulators | close apps |
-| `this Mac was short of memory` | failures with `Unknown error` or `Unable to clear state` are usually a slow simulator | close other simulators, `shotfleet run --locales <failed codes>` |
+| `this Mac was short of memory` | printed only when a failed flow's error is `Unknown error` or `Unable to clear state` on a loaded Mac: usually a slow simulator, not the app | close other simulators, `shotfleet run --locales <failed codes>` |
+| `failed step:` | under a `FAIL <lang>` line: the step Maestro stopped on, with its selector, as Maestro's log names it | compare the selector with what `on screen:` shows |
+| `failure screenshot:` | under a `FAIL <lang>` line: the screenshot Maestro took when the step failed | open it |
+| `on screen:` | under a `FAIL <lang>` line: up to 12 texts on the failure screen, from the screen hierarchy Maestro saved (else read once from the screenshot; left out while macOS text recognition is busy) | the selector should match one of them; if the screen is a different one, an earlier step went somewhere else |
+| `Maestro taps at portrait coordinates in iOS landscape` | iOS flow with `setOrientation: LANDSCAPE*`: Maestro's log shows a portrait-sized frame and the tap went to the element's portrait position, so it missed on the landscape screen (a Maestro issue, seen on iPad) | capture iPad in portrait, or open the screen with a launch argument or deep link instead of tapping there |
 | `maestro made no new screenshot for` | no screenshot for `stall_s` (default 900 s): a simulator or flow hung; shotfleet stopped Maestro and the languages go to the retry | usually load: close other simulators; raise `stall_s` only if a flow really takes longer between screenshots |
 | `maestro timed out` | one round exceeded `timeout_s` (default 600) | raise `timeout_s`, shorten the flow, or fewer `parallel` |
 | `flow passed but took` | fewer screenshots than `takeScreenshot` steps (an optional step skipped?) | check the flow, the maestro log in the output folder |
@@ -132,7 +138,8 @@ message the program prints. Run `shotfleet doctor` first for anything about tool
 | `keeps its translations inside compiled code` | `hint:` a Flutter, React Native, MAUI or Unity build | add the `strings = "<glob>"` line it prints |
 | `Flutter debug build` | `hint:` the DEBUG banner will show | `debugShowCheckedModeBanner: false`; Android: `flutter build apk --release` |
 | `has no JavaScript bundle` | `hint:` React Native Debug build needs Metro | build Release |
-| `no --app given: checking by language detection only` | weaker check | pass `--app` or `--strings` |
+| `no --app given: using` | check found the app build (or translation files) in the current folder the way `init` does | nothing; pass `--app` to choose another build |
+| `checking by language detection only` | weaker check: no `--app`, and no build found in the current folder | pass `--app` or `--strings`, or run check from the project folder |
 | `macOS can't read the script of` | those screens only got the weaker checks | optional Tesseract via `--ocr-command` |
 | `no text found (blank or still loading?)` | problem line: the screenshot is blank, or captured before the screen loaded | add `waitForAnimationToEnd` or an assert before `takeScreenshot` |
 | `has no listing in that language` | export skipped a language the store has no listing for | nothing to do |
