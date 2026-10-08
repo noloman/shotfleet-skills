@@ -1,7 +1,7 @@
 {
   "name": "shotfleet",
   "displayName": "shotfleet",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "Skills for shotfleet: capture and check localized App Store and Google Play screenshots, read the report, add the check to CI. The MCP server needs shotfleet installed on your Mac.",
   "author": {
     "name": "Manuel Lorenzo Parejo",
