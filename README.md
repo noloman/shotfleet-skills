@@ -7,7 +7,7 @@ language.
 
 shotfleet itself is a paid, closed-source program with a free tier: `check` is free, `run` is free for up to 2
 languages. The files here are MIT licensed and contain no shotfleet source; they only tell your AI coding agent how to
-use it. They match shotfleet 0.1.7.
+use it. They match shotfleet 0.1.8.
 
 The skills let your AI coding agent know how to install, set up, run and check
 shotfleet, and how to read the report:
