@@ -35,6 +35,7 @@ Keys valid in `[ios]` and `[android]`:
 | `strings` | string or list | read from the build | translation file globs (relative to the config) for Flutter, React Native, MAUI, Unity, exports |
 | `stall_s` | whole number | 900 | seconds without a new screenshot before a run is stopped as hung (a stuck simulator or flow) and retried once |
 | `settle_ms` | whole number | 1000 | before each screenshot, wait up to this many milliseconds for the screen to stop moving (a `waitForAnimationToEnd` step with that limit); `0` turns it off, 10000 is the most |
+| `clock` | string | none | a fixed date and time, `"2026-10-27 10:00"` (24-hour). Android: sets the emulator's date (needs root, so Google APIs images; auto time and time zone are turned off) and the status bar clock. iOS: sets the status bar time only. Default: the real date, status bar 9:41 |
 | `timeout_s` | whole number | 600 | time limit in seconds for one round of flows (accepted by the config check; not described in the docs) |
 
 `[ios]` only:
@@ -55,9 +56,13 @@ Keys valid in `[ios]` and `[android]`:
 | `apk` (required) | none | debug APK, API 33+ emulators |
 | `package` | read from the APK | refused if it differs |
 | `devices` | phone only | `["phone", "tablet"]`: phone 1080x1920 and tablet 1440x2560; output in `out/<device>/`, exported to `phoneScreenshots` and `tenInchScreenshots`; `"tablet-7"` adds a 7" tablet, 1080x1920 at 280 dpi, exported to `sevenInchScreenshots` |
+| `devices` (foldables) | none | `"fold"` (unfolded), `"fold-book"` (half open, like a book) and `"fold-tabletop"` (half open, like a laptop, rotated) run on one foldable emulator (a Pixel Fold profile when the SDK has one), one language at a time, and export to `tenInchScreenshots`. The inner display is captured through the emulator console because `adb screencap` is black there; not yet verified on a device |
+| `devices` (tables) | none | entries of `devices` may also be tables `{name = "tablet-landscape", base = "tablet", size = "2560x1440", density = 320, orientation = "landscape"}`: your own size, exported to the Play folder of `base` (phone, tablet or tablet-7; default phone); `orientation = "landscape"` makes the emulator wider than tall. Only `name` is required |
 | `shell` | none | list of commands run as `adb -s <serial> shell <command>` once per emulator right after boot (after demo mode), e.g. `["setprop debug.myapp.demo 1"]`; not run on a real emulator yet |
+| `root` | false | runs `adb root` after boot and before `shell`; refused with the reason on Play Store images. `clock` implies it |
 | `avd` | `shotfleet_android` | name of the phone emulator (accepted by the config check; not described in the docs) |
 | `avd_tablet` | `shotfleet_android_tablet` | name of the tablet emulator when `devices` includes `"tablet"` (accepted by the config check; not described in the docs) |
+| `avd_fold` | `shotfleet_android_fold` | name of the foldable emulator when `devices` includes `"fold"`, `"fold-book"` or `"fold-tabletop"` (same note) |
 | `avd_tablet-7` | `shotfleet_android_tablet7` | name of the 7" tablet emulator when `devices` includes `"tablet-7"` (same note) |
 | `system_image` | newest installed arm64 `google_apis` or `google_apis_playstore` image of API 33+, else `system-images;android-36;google_apis;arm64-v8a` | image for the emulator shotfleet creates (same note) |
 
@@ -86,7 +91,6 @@ timeout = 900            # seconds per language
   `~/Library/Caches/tools.fastlane/screenshots`; shotfleet makes it if missing and moves fastlane's `language.txt`,
   `locale.txt` and `snapshot-launch_arguments.txt` aside during the run.
 - A language that saved no screenshot, or lacks a screen another language saved, fails (exit 1), even when the test passed.
-- Paid like any `run`: 2 languages without a licence. `check` stays free.
 
 A language with under 50% of the app's own strings translated is skipped with a `note:`; list it in `locales` to
 capture it anyway.
@@ -174,7 +178,7 @@ key = "benchmarks_title"          # the app's own text for this string key, in e
 
 Keys are `any`, `all`, `not`, each a non-empty list of texts, and `key`, the key of one of the app's own strings (`key = "benchmarks_title"`): its text in the screenshot's language must be on screen, so a green run that captured the wrong screen gets a problem. It needs the app's strings (`--app` or `--strings` for `check`); a typo is refused (`unknown setting 'anny'; did you mean 'any'?`).
 `run` applies them itself; `shotfleet check <out> --content [shotfleet.toml]` applies them to existing screenshots (free,
-no licence; put `--content` after the folder). Problems are `<locale>/<file>: expected "text" on screen` or `... must not be on
+no key or account; put `--content` after the folder). Problems are `<locale>/<file>: expected "text" on screen` or `... must not be on
 screen`, a table naming no screenshot is a problem, and a locale table matching no language is a note. Case, accents and spacing are ignored.
 iOS compares the app's own text (exact in any script). Android is OCR: a text in a script macOS can't read is a note,
 `could not verify`, never a pass or a fail. The `check` JSON keeps its keys (`exit`, `screenshots`, `problems`, `notes`).
@@ -183,6 +187,5 @@ iOS compares the app's own text (exact in any script). Android is OCR: a text in
 
 - `shotfleet foo` runs `shotfleet-foo` from the PATH when `foo` is not a built-in command (like `git` and `gh`).
 - `SHOTFLEET_OCR` or `--ocr-command` swaps the text reader for scripts macOS can't read: `"tesseract {image} stdout -l {tesseract}"` (`{lang}` is the language code).
-- `SHOTFLEET_KEY` is the licence key for CI (see licence.md and ci.md).
 - `shotfleet skill install` copies these skills into `~/.claude/skills` (Claude Code, Cursor) and `~/.agents/skills` (Codex, Gemini CLI, GitHub Copilot, Cursor). `--project` uses `./.claude/skills` and `./.agents/skills`; `--dir` one folder you choose.
 - `shotfleet mcp` is an MCP server with `check`, `run` and `doctor`: `claude mcp add shotfleet -- shotfleet mcp`.
