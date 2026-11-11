@@ -5,9 +5,9 @@ that captures your App Store and Google Play screenshots in every language your 
 flow (or your own XCUITest screenshot tests, since 0.1.6), and checks that each screenshot is really in the right
 language.
 
-shotfleet itself is a paid, closed-source program with a free tier: `check` is free, `run` is free for up to 2
-languages. The files here are MIT licensed and contain no shotfleet source; they only tell your AI coding agent how to
-use it. They match shotfleet 0.1.9.
+shotfleet itself is free and open source (MIT): [github.com/noloman/shotfleet](https://github.com/noloman/shotfleet).
+The files here are MIT licensed and contain no shotfleet source; they only tell your AI coding agent how to
+use it.
 
 The skills let your AI coding agent know how to install, set up, run and check
 shotfleet, and how to read the report:
@@ -108,20 +108,8 @@ its report (`check.json` and `index.html`) to a report folder, and never changes
 
 ## Price
 
-The skills are free, MIT licensed. In shotfleet, `check` is free and `run` is free for up to 2 languages. `run`
-beyond 2 languages and `export` need a licence: [shotfleet.com](https://shotfleet.com).
-
-## Your licence key
-
-Never paste your licence key into an agent config, a chat, an MCP setting or a repo. Run this once yourself, in
-your own terminal:
-
-```bash
-shotfleet activate <your key>
-```
-
-After that your agent uses shotfleet and never sees the key. In CI, put the key in a secret called `SHOTFLEET_KEY`.
-Don't pass it with `claude mcp add --env`: it would end up in plain text in `~/.claude.json`.
+Everything is free: the skills and shotfleet itself, MIT licensed, no key. If it saves you time you can
+[sponsor the project](https://github.com/sponsors/noloman).
 
 ## Questions
 
